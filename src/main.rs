@@ -18,33 +18,16 @@ async fn main() -> Result<(), anyhow::Error> {
 			.nest_service("/", ServeDir::new(PUBLIC_DIR))
 			.layer(livereload);
 
-
-		// let mut content_watcher = RecommendedWatcher::new(move |_| rebuild_site().expect("Rebuilding site"), notify::Config::default())?;
-		let mut content_watcher = RecommendedWatcher::new(move |result: notify::Result<notify::Event>| {
-
-			match result {
-				Err(e) => println!("error: {}", e),
-				Ok(event) => {
-					let event_kind = match event.kind {
-						notify::EventKind::Create(_) => "Create",
-						notify::EventKind::Modify(_) => "Modify",
-						notify::EventKind::Remove(_) => "Remove",
-						_ => "Other",
-				};
-					println!("kind: {}", event_kind);
-					for path in event.paths {
-						println!("path changed: {}", path.display());
-					};
-				}
-			}
-			rebuild_site().expect("Rebuilding site");
-	}, notify::Config::default().with_compare_contents(true))?;
+		let mut content_watcher = RecommendedWatcher::new(move |_| {
+			rebuild_site().expect("Rebuilding site")
+		}, notify::Config::default())?;
 		content_watcher.watch(Path::new(CONTENT_DIR), notify::RecursiveMode::Recursive)?;
+
 		let mut public_watcher = RecommendedWatcher::new(move |_| reloader.reload(), notify::Config::default())?;
 		public_watcher.watch(Path::new(PUBLIC_DIR), notify::RecursiveMode::Recursive)?;
 
 		let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-		println!("serving site on http://{}", addr);
+		println!("Serving site at http://{}", addr);
 		axum::Server::bind(&addr)
 			.serve(app.into_make_service())
 			.await?;
@@ -98,7 +81,7 @@ fn rebuild_site() -> Result<(), anyhow::Error> {
 			let dest_path = path_str
 				.replace(CONTENT_DIR, PUBLIC_DIR);
 
-			// Using copy modifies the file, triggering another build
+			// Using fs::copy modifies the file metadata, triggering another build
 			// So we read, then write, instead
 			let file_content = fs::read_to_string(path)?;
 			fs::write(dest_path, file_content)?;
