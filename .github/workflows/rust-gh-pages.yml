@@ -42,6 +42,9 @@ jobs:
         with:
           name: public
 
+      - name: List files in public
+        run: ls -la ./public
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: peaceiris/actions-gh-pages@v3
