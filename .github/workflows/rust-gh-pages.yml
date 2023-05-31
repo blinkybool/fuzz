@@ -47,7 +47,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./website
+          publish_dir: ./public
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
