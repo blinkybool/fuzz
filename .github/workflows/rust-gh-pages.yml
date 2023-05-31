@@ -23,8 +23,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-rust-
 
+      # The argument to the build_site program configures the base_url
+      # for the html header.
       - name: Build
-        run: cargo run
+        run: cargo run --bin build_site /${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
