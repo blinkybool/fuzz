@@ -1,5 +1,4 @@
 extern crate fuzz;
-use anyhow::Ok;
 use fuzz::build_site;
 use std::env;
 
