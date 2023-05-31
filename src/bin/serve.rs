@@ -6,28 +6,28 @@ use notify::{Watcher, RecommendedWatcher};
 use fuzz::build_site;
 
 const CONTENT_DIR: &str = "content";
-const PUBLIC_DIR: &str = "public";
+const BUILD_DIR: &str = "_site";
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-	build_site("/").expect("Rebuilding site");
+	build_site("/", BUILD_DIR).expect("Rebuilding site");
 
 	let livereload = LiveReloadLayer::new();
 	let reloader = livereload.reloader();
 	let app = Router::new()
-		.nest_service("/", ServeDir::new(PUBLIC_DIR))
+		.nest_service("/", ServeDir::new(BUILD_DIR))
 		.layer(livereload);
 
 	let mut content_watcher = RecommendedWatcher::new(move |_| {
 		print!("rebuilding...");
 		io::stdout().lock().flush().unwrap();
-		build_site("/").expect("Rebuilding site");
+		build_site("/", BUILD_DIR).expect("Rebuilding site");
 		print!("done\n");
 	}, notify::Config::default())?;
 	content_watcher.watch(Path::new(CONTENT_DIR), notify::RecursiveMode::Recursive)?;
 
 	let mut public_watcher = RecommendedWatcher::new(move |_| reloader.reload(), notify::Config::default())?;
-	public_watcher.watch(Path::new(PUBLIC_DIR), notify::RecursiveMode::Recursive)?;
+	public_watcher.watch(Path::new(BUILD_DIR), notify::RecursiveMode::Recursive)?;
 
 	let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 	println!("Serving site at http://{}", addr);

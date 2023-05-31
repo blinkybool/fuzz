@@ -1,9 +1,8 @@
 const CONTENT_DIR: &str = "content";
-const PUBLIC_DIR: &str = "public";
 
-pub fn build_site(base_url: &str) -> Result<(), anyhow::Error> {
-	let _ = std::fs::remove_dir_all(PUBLIC_DIR);
-	let _ = std::fs::create_dir_all(std::path::Path::new(PUBLIC_DIR));
+pub fn build_site(base_url: &str, output_dir: &str) -> Result<(), anyhow::Error> {
+	let _ = std::fs::remove_dir_all(output_dir);
+	let _ = std::fs::create_dir_all(output_dir);
 
 	let markdown_files: Vec<String> = walkdir::WalkDir::new(CONTENT_DIR)
 		.into_iter()
@@ -25,14 +24,14 @@ pub fn build_site(base_url: &str) -> Result<(), anyhow::Error> {
 		html.push_str(FOOTER);
 
 		let html_file = file
-			.replace(CONTENT_DIR, PUBLIC_DIR)
+			.replace(CONTENT_DIR, output_dir)
 			.replace(".md", ".html");
 		std::fs::write(&html_file, html)?;
 
 		html_files.push(html_file);
 	}
 
-	write_index(html_files, base_url, PUBLIC_DIR)?;
+	write_index(html_files, base_url, output_dir)?;
 
 	// Just copy over non-markdown stuff
 	for entry in walkdir::WalkDir::new(CONTENT_DIR) {
@@ -41,8 +40,7 @@ pub fn build_site(base_url: &str) -> Result<(), anyhow::Error> {
 		let path_str = entry.path().display().to_string();
 		if entry.path().is_file() && !path_str.ends_with(".md") {
 			
-			let dest_path = path_str
-				.replace(CONTENT_DIR, PUBLIC_DIR);
+			let dest_path = path_str.replace(CONTENT_DIR, output_dir);
 
 			// Using fs::copy modifies the file metadata, triggering another build
 			// So we read, then write, instead
