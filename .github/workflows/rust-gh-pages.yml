@@ -13,16 +13,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Cache Rust toolchain
+        uses: actions/cache@v2
         with:
-          toolchain: stable
-          override: true
+          path: ~/.cargo
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-rust-
 
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
+        run: cargo run
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -42,8 +42,10 @@ jobs:
         with:
           name: public
 
-      - name: List files in public
-        run: ls -la ./public
+      - name: Show directory structure
+        run: |
+          echo "Directory structure:"
+          tree -I 'target' -L 3
 
       - name: Deploy to GitHub Pages
         id: deployment
