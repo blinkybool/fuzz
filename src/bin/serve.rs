@@ -26,8 +26,8 @@ async fn main() -> Result<(), anyhow::Error> {
 	}, notify::Config::default())?;
 	content_watcher.watch(Path::new(CONTENT_DIR), notify::RecursiveMode::Recursive)?;
 
-	let mut public_watcher = RecommendedWatcher::new(move |_| reloader.reload(), notify::Config::default())?;
-	public_watcher.watch(Path::new(BUILD_DIR), notify::RecursiveMode::Recursive)?;
+	let mut site_watcher = RecommendedWatcher::new(move |_| reloader.reload(), notify::Config::default())?;
+	site_watcher.watch(Path::new(BUILD_DIR), notify::RecursiveMode::Recursive)?;
 
 	let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 	println!("Serving site at http://{}", addr);
