@@ -1,5 +1,5 @@
 use axum::Router;
-use std::{fs, io::{self, Write}, net::SocketAddr, path::Path};
+use std::{env, fs, io::{self, Write}, net::SocketAddr, path::Path};
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use notify::{Watcher, RecommendedWatcher};
@@ -12,6 +12,11 @@ const PUBLIC_DIR: &str = "public";
 async fn main() -> Result<(), anyhow::Error> {
 	rebuild_site().expect("Rebuilding site");
 
+	let args: Vec<String> = env::args().collect();
+	if !(args.len() > 1 && args[1] == "serve") {
+		return Ok(());
+	}
+
 	let livereload = LiveReloadLayer::new();
 	let reloader = livereload.reloader();
 	let app = Router::new()
@@ -19,7 +24,10 @@ async fn main() -> Result<(), anyhow::Error> {
 		.layer(livereload);
 
 	let mut content_watcher = RecommendedWatcher::new(move |_| {
-		rebuild_site().expect("Rebuilding site")
+		print!("rebuilding...");
+		io::stdout().lock().flush().unwrap();
+		rebuild_site().expect("Rebuilding site");
+		print!("done\n");
 	}, notify::Config::default())?;
 	content_watcher.watch(Path::new(CONTENT_DIR), notify::RecursiveMode::Recursive)?;
 
@@ -36,9 +44,6 @@ async fn main() -> Result<(), anyhow::Error> {
 }
 
 fn rebuild_site() -> Result<(), anyhow::Error> {
-	print!("rebuilding...");
-	io::stdout().lock().flush().unwrap();
-
 	let _ = fs::remove_dir_all(PUBLIC_DIR);
 	let _ = fs::create_dir_all(Path::new(PUBLIC_DIR));
 
@@ -87,8 +92,7 @@ fn rebuild_site() -> Result<(), anyhow::Error> {
 			fs::write(dest_path, file_content)?;
 		}
 	}
-	
-	print!("done\n");
+
 	Ok(())
 }
 

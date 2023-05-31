@@ -3,7 +3,8 @@
 A simple static site generator with markdown rendering live-reloading.
 Based on https://kerkour.com/rust-static-site-generator, with ChatGPT assistance.
 
-Install rust/cargo with [rustup](https://www.rust-lang.org/learn/get-started) and then run `cargo run` in this repo.
+Install rust/cargo with [rustup](https://www.rust-lang.org/learn/get-started).
+Run `cargo run serve` to build and serve the website locally, or `cargo run` just to build it.
 
 Markdown files in /content are converted to html and written to /public.
 Other file types are just copied over. You can customise this behaviour in `rebuild_site`.
