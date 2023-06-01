@@ -16,7 +16,7 @@ Everything is live-reloaded, so changes to files in /content will rebuild the si
 
 I've opted to build and manually publish to the gh-pages branch, because it's less magic than github actions, which are slow because you have to compile rust and rebuild the project every single time.
 
-What we are doing here automatically with `cargo run --bin publish` is equivalently to copying the contents of /_site to the gh-pages branch of the repo (as well as adding a blank file called ".nojekyll), and pushing the changes.
+What we are doing here automatically with `cargo run --bin publish` is equivalent to copying the contents of /_site to the gh-pages branch of the repo (as well as adding a blank file called ".nojekyll), and pushing the changes. We take care to not delete the .git directory inside the gh-pages branch.
 
 Before publishing, you must change the variable `BASE_URL` according to your needs.
 For example, if your website will be at `blinkybool.github.io/fuzz/`, then `BASE_URL` should be "/fuzz/".
@@ -30,7 +30,7 @@ To publish, run `cargo run --bin publish`. This will
 - move the site contents into the branch (worktree)
 - push the changes to github
 
-> What's a [worktree](https://git-scm.com/docs/git-worktree)? It's a way to have multiple branches checked out locally. A worktree exists by default within the main repo, but the main worktree won't confuse it for a new file to commit. You can cd into it and execute git commands as normal.
+> What's a [worktree](https://git-scm.com/docs/git-worktree)? It's a way to have multiple branches checked out locally. We put the worktree within the repo, but we have it ignored in .gitignore. You can cd into it and execute git commands in that branch as normal.
 
 Now go to your github repo settings and then the "Pages" tab, and ensure that it's set to use
 the "gh-pages" branch to deploy the website. Your changes should appear on your website shortly
@@ -56,7 +56,9 @@ In theory, you could migrate your existing website, if it's simple enough, by vi
 
 # TODO (for you)
 - [x] Deployment to github pages.
-- Templating: `template.rs` is a barebones version of templating with something like [Sailfish](https://github.com/rust-sailfish/sailfish)
+- Templating:
+	- The simplest solution is what we are doing in lib.rs with the render_body function. You might have different rendering functions if you want to wrap markdown files in different html templates.
+	- However it's hard to work with html inside a raw rust string, so something like [Sailfish](https://github.com/rust-sailfish/sailfish) gives a general purpose way to make html template files with parameters.
 - CSS: Make it pretty
 - Make the rebuilding smarter (it seems to rebuild multiple times per save)
 - LaTeX rendering
