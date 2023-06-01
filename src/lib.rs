@@ -52,6 +52,9 @@ pub fn build_site(base_url: &str, output_dir: &str) -> Result<(), anyhow::Error>
 	Ok(())
 }
 
+// Create index.html file with links to all markdown files
+// It's unlikely you actually want a link to every markdown page in the header
+// so you should change this with your own logic.
 fn write_index(files: Vec<String>, base_url: &str, output_dir: &str) -> Result<(), anyhow::Error> {
 	let mut html = render_header(base_url);
 	let body = files

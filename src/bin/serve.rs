@@ -10,7 +10,7 @@ const BUILD_DIR: &str = "_site";
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-	build_site("/", BUILD_DIR).expect("Rebuilding site");
+	build_site("/", BUILD_DIR).expect("Failed to build site");
 
 	let livereload = LiveReloadLayer::new();
 	let reloader = livereload.reloader();
@@ -21,7 +21,7 @@ async fn main() -> Result<(), anyhow::Error> {
 	let mut content_watcher = RecommendedWatcher::new(move |_| {
 		print!("rebuilding...");
 		io::stdout().lock().flush().unwrap();
-		build_site("/", BUILD_DIR).expect("Rebuilding site");
+		build_site("/", BUILD_DIR).expect("Failed to rebuild site");
 		print!("done\n");
 	}, notify::Config::default())?;
 	content_watcher.watch(Path::new(CONTENT_DIR), notify::RecursiveMode::Recursive)?;

@@ -8,11 +8,12 @@ use fuzz::build_site;
 const BASE_URL: &str = "/fuzz/";
 
 fn main() -> Result<(), anyhow::Error> {
-	// Create git worktree for gh-pages branch inside the repo
+	// Check for existing git worktree for gh-pages branch
 	let worktrees = Command::new("git")
 		.args(["worktree", "list"])
 		.output()?;
 
+	// Create one if missing
 	if !String::from_utf8_lossy(&worktrees.stdout).contains("gh-pages") {
 		Command::new("git")
 			.args(["worktree", "add", "gh-pages"])
@@ -27,9 +28,11 @@ fn main() -> Result<(), anyhow::Error> {
 		}
 	}
 
+	// Build the site inside gh-pages
 	build_site(BASE_URL, "gh-pages/_site").expect("Failed to build site.");
 
 	// Move gh-pages/_site contents to gh-pages
+	// If we had built to gh-pages top-level, it would have destroyed the .git directory
 	for entry in fs::read_dir("gh-pages/_site")? {
 		let path = entry?.path();
 		if !path.ends_with(".git") {
@@ -40,6 +43,7 @@ fn main() -> Result<(), anyhow::Error> {
 	fs::remove_dir("gh-pages/_site").expect("Failed to remove gh-pages/_site");
 	fs::write("gh-pages/.nojekyll", "").expect("Failed to write .nojekyll file");
 
+	// Check for changes
 	let output = Command::new("git")
 		.args(["-C", "./gh-pages", "diff"])
     .output()?;
@@ -49,6 +53,7 @@ fn main() -> Result<(), anyhow::Error> {
 		return Ok(());
 	}
 
+	// Commit and pushes changes
 	Command::new("git")
 		.args(["-C", "./gh-pages", "add", "-A"])
 		.output()?;
